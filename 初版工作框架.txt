@@ -1,0 +1,73 @@
+商品网上交易系统/
+├── .gitignore                     # Git忽略配置（node_modules等）
+├── README.md                      # 项目说明（展示UML图、启动方式）
+├── package.json                   # 项目根依赖（可选，或用workspace）
+│
+├── docs/                          # 📁 全部文档与设计资料（设计负责人主责）
+│   ├── 可行性分析报告.md
+│   ├── 需求规格说明书.md
+│   ├── 概要设计说明书.md
+│   ├── 详细设计说明书.md
+│   ├── 测试计划与报告.md
+│   ├── 用户手册.md
+│   └── uml/                       # 📁 UML图源文件与导出图片
+│       ├── use-case.puml
+│       ├── use-case.svg
+│       ├── deployment.puml
+│       ├── deployment.svg
+│       ├── class-diagram.puml
+│       ├── class-diagram.svg
+│       ├── sequence-order.puml
+│       ├── sequence-order.svg
+│       ├── state-order.puml
+│       ├── state-order.svg
+│       ├── activity-audit.puml
+│       └── activity-audit.svg
+│
+├── frontend/                      # 📁 前端代码（前端开发主责）
+│   ├── index.html                 # 主页面入口
+│   ├── css/                       # 自定义CSS样式
+│   │   └── style.css
+│   ├── js/                        # 前端JS逻辑
+│   │   ├── main.js                # 页面交互、AJAX请求
+│   │   └── utils.js               # 工具函数（表单校验等）
+│   ├── images/                    # 静态图片（商品默认图等）
+│   └── pages/                     # 各模块页面（可选，如商品列表页、订单页）
+│       ├── login.html
+│       ├── product-list.html
+│       └── order.html
+│
+├── backend/                       # 📁 后端代码（后端开发2人共同主责）
+│   ├── package.json               # 后端依赖（express等）
+│   ├── app.js                     # 主入口文件，启动服务器
+│   ├── config/                    # 配置文件（数据库连接、密钥等）
+│   │   ├── db.js
+│   │   └── auth.js
+│   ├── routes/                    # 路由层（定义所有API端点）
+│   │   ├── users.js
+│   │   ├── products.js
+│   │   ├── orders.js
+│   │   └── audit.js
+│   ├── controllers/               # 业务逻辑层（处理请求逻辑）
+│   │   ├── userController.js
+│   │   ├── productController.js
+│   │   ├── orderController.js
+│   │   └── auditController.js
+│   ├── models/                    # 数据模型层（数据库操作）
+│   │   ├── user.js
+│   │   ├── product.js
+│   │   ├── order.js
+│   │   └── review.js
+│   ├── middleware/                # 中间件（认证、校验）
+│   │   ├── auth.js
+│   │   └── validator.js
+│   └── utils/                     # 工具函数（加密、返回格式）
+│       └── response.js
+│
+├── database/                      # 📁 数据库相关（数据库设计人员主责）
+│   ├── init.sql                   # 数据库初始化建表SQL
+│   ├── seed.sql                   # 测试数据填充SQL
+│   └── README.md                  # 数据库启动与连接说明
+│
+└── tools/                         # 📁 工具脚本（可选）
+    └── plantuml.jar               # 本地PlantUML导出工具（如果用了）
