@@ -1,0 +1,26 @@
+@startuml 审核活动图
+skinparam activityBackgroundColor #E8EAF6
+skinparam activityBorderColor #3949AB
+
+start
+:管理员登录;
+:查看待审核列表;
+if (审核用户?) then (是)
+  :检查用户信息;
+  if (信息真实?) then (是)
+    :通过审核，用户状态改为 active;
+  else (否)
+    :拒绝，用户状态改为 banned;
+  endif
+else (否)
+  :审核商品;
+  :检查商品描述与图片;
+  if (符合规范?) then (是)
+    :通过审核，商品状态改为 approved;
+  else (否)
+    :拒绝，商品状态改为 rejected;
+  endif
+endif
+:记录审核日志(Review表);
+stop
+@enduml

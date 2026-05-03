@@ -1,0 +1,59 @@
+@startuml 系统部署架构图
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam component {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+skinparam database {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+
+node "客户端浏览器" {
+  component "Bootstrap 前端页面\n(HTML/CSS/JS)" as Frontend
+}
+
+node "Node.js 服务器 (Express)" as Server {
+  component "路由层 (Routes)" as Routes {
+    component "/api/users" as R_User
+    component "/api/products" as R_Product
+    component "/api/orders" as R_Order
+    component "/api/audit" as R_Audit
+  }
+  component "业务逻辑层 (Controllers)" as Controllers {
+    component "用户模块" as M_User
+    component "商品模块" as M_Product
+    component "订单模块" as M_Order
+    component "审查模块" as M_Audit
+  }
+  component "中间件 (Middleware)" as Middleware {
+    component "JWT 认证" as Auth
+    component "数据校验" as Valid
+  }
+}
+
+database "SQL 关系型数据库" as DB {
+  component "users" as T_User
+  component "products" as T_Product
+  component "orders" as T_Order
+  component "reviews" as T_Review
+}
+
+Frontend --> Routes : HTTP/JSON
+Routes --> Controllers : 调用
+Controllers --> Middleware : 前置处理
+Middleware --> DB : SQL 操作
+
+R_User --> M_User
+R_Product --> M_Product
+R_Order --> M_Order
+R_Audit --> M_Audit
+M_User --> T_User
+M_User --> T_Review
+M_Product --> T_Product
+M_Product --> T_Review
+M_Order --> T_Order
+M_Order --> T_User
+M_Order --> T_Product
+@enduml

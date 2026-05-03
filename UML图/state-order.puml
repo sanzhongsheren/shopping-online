@@ -1,0 +1,13 @@
+@startuml 订单状态图
+skinparam stateBackgroundColor #FFF3E0
+skinparam stateBorderColor #E65100
+
+[*] --> 已支付 : 买家下单
+已支付 --> 已出货 : 卖家发货
+已出货 --> 已收货 : 买家确认收货
+已收货 --> [*]
+
+已支付 : 订单生成，等待卖家处理
+已出货 : 商品在途，等待买家确认
+已收货 : 交易成功，订单结束
+@enduml

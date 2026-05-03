@@ -1,0 +1,34 @@
+@startuml 购物与配送时序图
+skinparam sequenceParticipantBackgroundColor #E3F2FD
+skinparam sequenceParticipantBorderColor #1565C0
+
+actor 买家 as Buyer
+actor 卖家 as Seller
+participant "前端" as Front
+participant "后端 API" as API
+participant "数据库" as DB
+
+== 1. 买家下单 ==
+Buyer -> Front : 点击“立即购买”
+Front -> API : POST /api/orders\n{product_id, quantity}
+API -> DB : INSERT INTO orders
+DB --> API : 订单创建成功
+API --> Front : {order_id, status: "paid"}
+Front --> Buyer : 显示订单详情
+
+== 2. 卖家出货 ==
+Seller -> Front : 进入订单管理，点“发货”
+Front -> API : PUT /api/orders/{id}\n{status: "shipped"}
+API -> DB : UPDATE orders SET status='shipped'
+DB --> API : 更新成功
+API --> Front : {order_id, status: "shipped"}
+Front --> Seller : 提示“出货成功”
+
+== 3. 买家收货 ==
+Buyer -> Front : 确认收货
+Front -> API : PUT /api/orders/{id}\n{status: "received"}
+API -> DB : UPDATE orders SET status='received'
+DB --> API : 更新成功
+API --> Front : {order_id, status: "received"}
+Front --> Buyer : 交易完成
+@enduml

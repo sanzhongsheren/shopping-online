@@ -1,0 +1,49 @@
+@startuml 系统用例图
+left to right direction
+skinparam actorBackgroundColor #E3F2FD
+skinparam usecaseBackgroundColor #FFF3E0
+
+actor 买家 as Buyer
+actor 卖家 as Seller
+actor 管理员 as Admin
+
+rectangle "商品网上交易系统" {
+  (注册) as UC_Reg
+  (登录) as UC_Login
+  (浏览商品) as UC_Browse
+  (搜索商品) as UC_Search
+  (加入购物车) as UC_Cart
+  (下订单) as UC_Order
+  (确认收货) as UC_Receive
+  (留言) as UC_Message
+
+  (发布商品) as UC_Publish
+  (编辑商品) as UC_EditProduct
+  (查看订单) as UC_ViewOrder
+  (修改订单状态[出货]) as UC_Ship
+
+  (审核用户) as UC_AuditUser
+  (审核商品) as UC_AuditProduct
+  (管理订单) as UC_ManageOrder
+}
+
+Buyer --> UC_Reg
+Buyer --> UC_Login
+Buyer --> UC_Browse
+Buyer --> UC_Search
+Buyer --> UC_Cart
+Buyer --> UC_Order
+Buyer --> UC_Receive
+Buyer --> UC_Message
+
+Seller --> UC_Login
+Seller --> UC_Publish
+Seller --> UC_EditProduct
+Seller --> UC_ViewOrder
+Seller --> UC_Ship
+
+Admin --> UC_Login
+Admin --> UC_AuditUser
+Admin --> UC_AuditProduct
+Admin --> UC_ManageOrder
+@enduml

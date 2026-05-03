@@ -1,0 +1,52 @@
+@startuml 数据库类图
+skinparam classBackgroundColor #E3F2FD
+skinparam classBorderColor #1565C0
+
+class User {
+  + id : int <<PK>>
+  + username : varchar(50)
+  + password : varchar(255)
+  + role : enum('buyer','seller','admin')
+  + status : enum('pending','active','banned')
+  + create_time : datetime
+}
+
+class Product {
+  + id : int <<PK>>
+  + seller_id : int <<FK>>
+  + title : varchar(100)
+  + description : text
+  + price : decimal(10,2)
+  + image_url : varchar(255)
+  + status : enum('pending','approved','rejected','sold')
+  + create_time : datetime
+}
+
+class Order {
+  + id : int <<PK>>
+  + buyer_id : int <<FK>>
+  + product_id : int <<FK>>
+  + status : enum('paid','shipped','received')
+  + quantity : int
+  + total_price : decimal(10,2)
+  + create_time : datetime
+  + ship_time : datetime
+  + receive_time : datetime
+}
+
+class Review {
+  + id : int <<PK>>
+  + user_id : int <<FK>>
+  + product_id : int <<FK>>
+  + target_type : enum('user','product')
+  + status : enum('pending','approved','rejected')
+  + result : text
+  + review_time : datetime
+}
+
+User "1" -- "0..*" Product : 发布 >
+User "1" -- "0..*" Order : 创建 >
+User "1" -- "0..*" Review : 被审核 >
+Product "1" -- "0..*" Order : 包含于 >
+Product "1" -- "0..*" Review : 被审核 >
+@enduml
