@@ -1,0 +1,28 @@
+### 公开接口
+
+- `GET /api/products` - 商品列表（支持 ?page=&pageSize=&categoryId=&keyword=）
+- `GET /api/products/:id` - 商品详情
+- `POST /api/users/register` - 用户注册
+- `POST /api/users/login` - 用户登录（返回 JWT）
+
+### 需认证接口
+
+在 Header 中添加 `Authorization: Bearer <token>`
+
+- `GET /api/users/profile` - 获取个人信息
+- `POST /api/products` (seller) - 创建商品
+- `PUT /api/products/:id` (seller) - 更新商品
+- `DELETE /api/products/:id` (seller) - 下架商品
+- `POST /api/orders` (buyer) - 创建订单
+- `GET /api/orders/my` (buyer) - 买家订单列表
+- `GET /api/orders/seller` (seller) - 卖家订单列表
+- `PUT /api/orders/:id/pay` (buyer) - 支付
+- `PUT /api/orders/:id/ship` (seller) - 发货
+- `PUT /api/orders/:id/receive` (buyer) - 确认收货
+- `PUT /api/orders/:id/cancel` - 取消订单
+
+### 管理员接口
+
+- `GET /api/audit/pending` (admin) - 待审核列表
+- `PUT /api/audit/process` (admin) - 处理审核
+- `PUT /api/products/:id/approve` (admin) - 审核商品
