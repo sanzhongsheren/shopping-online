@@ -11,7 +11,7 @@ USE online_shopping;
 -- 插入管理员账号 (密码: admin123)
 -- ----------------------------
 INSERT INTO users (username, password, email, phone, role, status, real_name) VALUES
-('admin', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p', 'admin@shop.com', '13800000000', 'admin', 'active', '系统管理员');
+('admin', '$2a$10$K9U.UNZSwMCHntpHMl7TQ.Gr6xwm9X0/m.uRcE7dCEX1Oui69Zmcm', 'admin@shop.com', '13800000000', 'admin', 'active', '系统管理员');
 
 -- ----------------------------
 -- 插入分类数据
@@ -44,17 +44,17 @@ INSERT INTO categories (category_name, parent_id, sort_order) VALUES
 -- 插入卖家账号 (密码: seller123)
 -- ----------------------------
 INSERT INTO users (username, password, email, phone, role, status, real_name, id_card) VALUES
-('seller001', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6q', 'seller1@shop.com', '13800000001', 'seller', 'approved', '张三', '110101199001011234'),
-('seller002', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6r', 'seller2@shop.com', '13800000002', 'seller', 'approved', '李四', '110101199002021234'),
-('seller003', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6s', 'seller3@shop.com', '13800000003', 'seller', 'pending', '王五', '110101199003031234');
+('seller001', '$2a$10$GtXgPdCy0DzMTGAFn/D9mOXHvy826gDRsU2QuK2jBy/lxibovOWTu', 'seller1@shop.com', '13800000001', 'seller', 'approved', '张三', '110101199001011234'),
+('seller002', '$2a$10$GtXgPdCy0DzMTGAFn/D9mOXHvy826gDRsU2QuK2jBy/lxibovOWTu', 'seller2@shop.com', '13800000002', 'seller', 'approved', '李四', '110101199002021234'),
+('seller003', '$2a$10$GtXgPdCy0DzMTGAFn/D9mOXHvy826gDRsU2QuK2jBy/lxibovOWTu', 'seller3@shop.com', '13800000003', 'seller', 'pending', '王五', '110101199003031234');
 
 -- ----------------------------
 -- 插入买家账号 (密码: buyer123)
 -- ----------------------------
 INSERT INTO users (username, password, email, phone, role, status, real_name) VALUES
-('buyer001', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6t', 'buyer1@shop.com', '13900000001', 'buyer', 'active', '赵六'),
-('buyer002', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6u', 'buyer2@shop.com', '13900000002', 'buyer', 'active', '钱七'),
-('buyer003', '$2a$10$X4P8N5j.u5j6j5j6j5j6jOQa1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6v', 'buyer3@shop.com', '13900000003', 'buyer', 'pending', '孙八');
+('buyer001', '$2a$10$xr6LDvbeeL1mKHKebc40leyQz1CVjqClyiqDaPJbvgtQ0mkq3mDqK', 'buyer1@shop.com', '13900000001', 'buyer', 'active', '赵六'),
+('buyer002', '$2a$10$xr6LDvbeeL1mKHKebc40leyQz1CVjqClyiqDaPJbvgtQ0mkq3mDqK', 'buyer2@shop.com', '13900000002', 'buyer', 'active', '钱七'),
+('buyer003', '$2a$10$xr6LDvbeeL1mKHKebc40leyQz1CVjqClyiqDaPJbvgtQ0mkq3mDqK', 'buyer3@shop.com', '13900000003', 'buyer', 'pending', '孙八');
 
 -- ----------------------------
 -- 插入收货地址
