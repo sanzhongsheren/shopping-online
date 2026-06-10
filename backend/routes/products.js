@@ -5,6 +5,7 @@ const { authenticate, authorizeRoles } = require("../middleware/auth");
 
 // 公开接口
 router.get("/", productController.getProductList);
+router.get("/categories", productController.getCategories);
 router.get("/:id", productController.getProductDetail);
 
 // 卖家接口（需要登录并具有 seller 角色）

@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const db = require("../config/db");
 const { success, error, badRequest, notFound } = require("../utils/response");
 const Audit = require("../models/audit");
 
@@ -11,12 +12,27 @@ exports.getProductList = async (req, res) => {
     const pageSize = parseInt(req.query.pageSize) || 10;
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : undefined;
     const keyword = req.query.keyword || undefined;
+    const sort = req.query.sort || 'default';
 
-    const result = await Product.getProductList({ page, pageSize, categoryId, keyword });
+    const result = await Product.getProductList({ page, pageSize, categoryId, keyword, sort });
     success(res, result, "商品列表获取成功");
   } catch (err) {
     console.error("商品列表查询错误:", err);
     error(res, "获取商品列表失败");
+  }
+};
+
+/**
+ * 获取商品分类列表（公开）
+ */
+exports.getCategories = async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM categories ORDER BY sort_order, category_id");
+    const [rows] = result;
+    success(res, { categories: rows }, "分类列表获取成功");
+  } catch (err) {
+    console.error("分类查询错误:", err);
+    error(res, "获取分类失败");
   }
 };
 

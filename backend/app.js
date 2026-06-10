@@ -17,11 +17,13 @@ app.use("/api/products", require("./routes/products"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/audit", require("./routes/audit"));
+app.use("/api/cart", require("./routes/cart"));
+app.use("/api/messages", require("./routes/messages"));
+app.use("/api/favorites", require("./routes/favorites"));
 
-// 404
-app.use((req, res) => {
-  res.status(404).json({ code: 404, message: "接口不存在" });
-});
+// 托管前端静态文件
+const path = require("path");
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // 全局错误处理
 app.use((err, req, res, next) => {

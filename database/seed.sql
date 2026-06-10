@@ -90,24 +90,24 @@ INSERT INTO products (seller_id, category_id, product_name, description, price, 
 (2, 11, '真皮男士商务皮鞋', '头层牛皮，透气内里，简约商务款式，舒适耐磨', 328.00, 90, '双', '/images/product_men_shoes.jpg', 'onsale', 220, 30),
 (3, 11, '时尚女士细高跟单鞋', '简约时尚设计，优雅气质，舒适鞋跟，日常通勤必备', 258.00, 100, '双', '/images/product_women_shoes.jpg', 'onsale', 350, 55),
 
--- 手机通讯 (category_id = 12)
-(2, 12, '蓝牙耳机无线耳机', '入耳式设计，降噪功能，超长续航，兼容苹果安卓', 199.00, 200, '副', '/images/product_earphone.jpg', 'onsale', 800, 156),
-(3, 12, '数据线快充线', 'Type-C快充线，充电传输二合一，编织线材耐用', 29.90, 1000, '条', '/images/product_cable.jpg', 'onsale', 1200, 320),
+-- 手机通讯 (category_id = 13, 属于数码电子)
+(2, 13, '蓝牙耳机无线耳机', '入耳式设计，降噪功能，超长续航，兼容苹果安卓', 199.00, 200, '副', '/images/product_earphone.jpg', 'onsale', 800, 156),
+(3, 13, '数据线快充线', 'Type-C快充线，充电传输二合一，编织线材耐用', 29.90, 1000, '条', '/images/product_cable.jpg', 'onsale', 1200, 320),
 
--- 电脑办公 (category_id = 13)
-(2, 13, '无线蓝牙键盘鼠标套装', '静音按键，人体工学设计，支持多设备切换', 139.00, 150, '套', '/images/product_keyboard.jpg', 'onsale', 420, 68),
+-- 电脑办公 (category_id = 14, 属于数码电子)
+(2, 14, '无线蓝牙键盘鼠标套装', '静音按键，人体工学设计，支持多设备切换', 139.00, 150, '套', '/images/product_keyboard.jpg', 'onsale', 420, 68),
 
--- 家居家具 (category_id = 14)
-(2, 14, '北欧简约实木书桌', '进口白蜡木，环保水性漆，1.2m/1.4m可选', 899.00, 30, '张', '/images/product_desk.jpg', 'onsale', 180, 15),
-(3, 14, '轻奢岩板茶几', '岩板台面+金属框架，现代简约风格，时尚大气', 699.00, 40, '张', '/images/product_coffee_table.jpg', 'onsale', 120, 8),
+-- 家具 (category_id = 16, 属于家居用品)
+(2, 16, '北欧简约实木书桌', '进口白蜡木，环保水性漆，1.2m/1.4m可选', 899.00, 30, '张', '/images/product_desk.jpg', 'onsale', 180, 15),
+(3, 16, '轻奢岩板茶几', '岩板台面+金属框架，现代简约风格，时尚大气', 699.00, 40, '张', '/images/product_coffee_table.jpg', 'onsale', 120, 8),
 
--- 厨具 (category_id = 15)
-(2, 15, '德国进口不粘炒锅', '304不锈钢，蜂窝不粘设计，少油烟，32cm', 368.00, 60, '口', '/images/product_wok.jpg', 'onsale', 280, 35),
-(3, 15, '日式陶瓷餐具套装', '釉下彩工艺，健康环保，16件套礼盒装', 258.00, 80, '套', '/images/product_dishes.jpg', 'onsale', 190, 22),
+-- 厨具 (category_id = 17, 属于家居用品)
+(2, 17, '德国进口不粘炒锅', '304不锈钢，蜂窝不粘设计，少油烟，32cm', 368.00, 60, '口', '/images/product_wok.jpg', 'onsale', 280, 35),
+(3, 17, '日式陶瓷餐具套装', '釉下彩工艺，健康环保，16件套礼盒装', 258.00, 80, '套', '/images/product_dishes.jpg', 'onsale', 190, 22),
 
--- 书籍 (category_id = 16)
-(2, 16, 'JavaScript高级程序设计', '前端开发经典教材，涵盖ES6+新特性，权威指南', 89.00, 200, '本', '/images/product_js_book.jpg', 'onsale', 550, 88),
-(2, 16, '深入理解计算机系统', 'CSAPP原书第3版，计算机科学经典著作',  139.00, 100, '本', '/images/product_cs_book.jpg', 'onsale', 380, 45);
+-- 书籍 (category_id = 18, 属于图书音像)
+(2, 18, 'JavaScript高级程序设计', '前端开发经典教材，涵盖ES6+新特性，权威指南', 89.00, 200, '本', '/images/product_js_book.jpg', 'onsale', 550, 88),
+(2, 18, '深入理解计算机系统', 'CSAPP原书第3版，计算机科学经典著作',  139.00, 100, '本', '/images/product_cs_book.jpg', 'onsale', 380, 45);
 
 -- ----------------------------
 -- 插入购物车数据

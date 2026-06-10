@@ -39,7 +39,7 @@ exports.register = async (req, res) => {
 // 登录
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
     if (!username || !password) {
       return badRequest(res, "请输入用户名和密码");
     }
@@ -61,6 +61,11 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return badRequest(res, "用户名或密码错误");
+    }
+
+    // 校验角色是否匹配
+    if (role && role !== user.role) {
+      return badRequest(res, "角色不匹配，请选择正确的角色登录");
     }
 
     // 生成 token
@@ -96,5 +101,19 @@ exports.getProfile = async (req, res) => {
   } catch (err) {
     console.error("获取用户信息失败:", err);
     error(res, "获取用户信息失败");
+  }
+};
+
+// 更新个人信息
+exports.updateProfile = async (req, res) => {
+  try {
+    const { email, phone, real_name } = req.body;
+    const db = require("../config/db");
+    const sql = "UPDATE users SET email = ?, phone = ?, real_name = ? WHERE user_id = ?";
+    await db.query(sql, [email, phone, real_name, req.user.userId]);
+    success(res, null, "个人信息已更新");
+  } catch (err) {
+    console.error("更新个人信息失败:", err);
+    error(res, "更新个人信息失败");
   }
 };

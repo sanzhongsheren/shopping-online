@@ -5,18 +5,29 @@ async function getProductList(options = {}) {
   const pageSize = Number(options.pageSize) || 10;
   const categoryId = options.categoryId ? Number(options.categoryId) : null;
   const keyword = options.keyword ? String(options.keyword) : null;
+  const sort = options.sort || 'default';
 
   let whereClause = "WHERE p.status = 'onsale'";
   const filterParams = [];
 
   if (categoryId) {
-    whereClause += " AND p.category_id = ?";
-    filterParams.push(categoryId);
+    whereClause += " AND p.category_id IN (SELECT category_id FROM categories WHERE parent_id = ? OR category_id = ?)";
+    filterParams.push(categoryId, categoryId);
   }
   if (keyword) {
     whereClause += " AND p.product_name LIKE ?";
     filterParams.push(`%${keyword}%`);
   }
+
+  // 排序映射
+  const sortMap = {
+    default: 'p.updated_at DESC',
+    sales: 'p.sales_count DESC',
+    price_asc: 'p.price ASC',
+    price_desc: 'p.price DESC',
+    newest: 'p.created_at DESC',
+  };
+  const orderBy = sortMap[sort] || 'p.updated_at DESC';
 
   // 总条数查询
   const countSql = `SELECT COUNT(*) AS total FROM products p ${whereClause}`;
@@ -25,7 +36,7 @@ async function getProductList(options = {}) {
     : await db.query(countSql);
   const total = countRows[0].total;
 
-  // 主查询（使用 LIMIT ?, ? 替代 LIMIT ? OFFSET ?）
+  // 主查询
   const sql = `
     SELECT
       p.product_id, p.product_name, p.price, p.stock, p.unit,
@@ -34,7 +45,7 @@ async function getProductList(options = {}) {
     FROM products p
     LEFT JOIN users u ON p.seller_id = u.user_id
     ${whereClause}
-    ORDER BY p.updated_at DESC
+    ORDER BY ${orderBy}
     LIMIT ?, ?
   `;
   const offset = (page - 1) * pageSize;

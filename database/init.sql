@@ -79,7 +79,7 @@ CREATE TABLE products (
     description TEXT COMMENT '商品描述',
     price DECIMAL(10, 2) NOT NULL COMMENT '单价',
     stock INT NOT NULL DEFAULT 0 COMMENT '库存数量',
-    unit VARCHAR(20) DEFAULT '件' COMMENT '计量单位',
+    unit VARCHAR(20) DEFAULT '' COMMENT '计量单位',
     image_url VARCHAR(255) COMMENT '商品主图URL',
     images JSON COMMENT '商品图片列表(JSON数组)',
     status ENUM('pending', 'approved', 'rejected', 'onsale', 'offsale', 'deleted') NOT NULL DEFAULT 'pending' COMMENT '商品状态',

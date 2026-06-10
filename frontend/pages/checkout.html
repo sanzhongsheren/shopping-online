@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>结算 - 商品网上交易系统</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+  <header class="top-header" id="app-header"></header>
+  <div id="toast-container"></div>
+
+  <main class="page-container">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="../index.html">首页</a></li>
+          <li class="breadcrumb-item"><a href="cart.html">购物车</a></li>
+          <li class="breadcrumb-item active">确认订单</li>
+        </ol>
+      </nav>
+
+      <h4 class="fw-bold mb-3"><i class="fas fa-file-invoice text-primary-custom me-2"></i>确认订单</h4>
+
+      <div class="row">
+        <div class="col-md-8">
+          <!-- 收货地址 -->
+          <div class="bg-white rounded border p-3 mb-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-map-marker-alt me-2 text-primary-custom"></i>收货地址</h6>
+            <div id="address-list">
+              <div class="text-muted py-2">正在加载地址...</div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary mt-2" id="btn-new-address"><i class="fas fa-plus me-1"></i>新增地址</button>
+          </div>
+
+          <!-- 商品清单 -->
+          <div class="bg-white rounded border p-3 mb-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-box me-2 text-primary-custom"></i>商品清单</h6>
+            <div id="order-items">
+              <div class="text-muted py-2">正在加载商品...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 订单摘要 -->
+        <div class="col-md-4">
+          <div class="bg-white rounded border p-3">
+            <h6 class="fw-bold mb-3">订单摘要</h6>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">商品数量:</span>
+              <span id="checkout-count">0 件</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">商品小计:</span>
+              <span id="checkout-subtotal">¥0.00</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-3">
+              <span class="fw-bold">应付总额:</span>
+              <span class="product-price fs-5" id="checkout-total">¥0.00</span>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-muted">买家留言</label>
+              <textarea class="form-control" id="buyer-message" rows="2" placeholder="选填，给卖家的留言..." maxlength="255"></textarea>
+            </div>
+            <button class="btn btn-primary w-100 py-2" id="btn-submit-order">
+              <i class="fas fa-credit-card me-2"></i>提交订单
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 新增地址模态框 -->
+  <div class="modal fade" id="addressModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">新增收货地址</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-address" onsubmit="return false;">
+            <div class="mb-2">
+              <label class="form-label small">收货人</label>
+              <input type="text" class="form-control" id="addr-receiver" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">联系电话</label>
+              <input type="tel" class="form-control" id="addr-phone" required>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4">
+                <label class="form-label small">省份</label>
+                <input type="text" class="form-control" id="addr-province" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">城市</label>
+                <input type="text" class="form-control" id="addr-city" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">区县</label>
+                <input type="text" class="form-control" id="addr-district" required>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">详细地址</label>
+              <input type="text" class="form-control" id="addr-detail" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" id="btn-save-address">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!App.requireLogin()) return;
+
+      var selectedAddressId = null;
+      var orderItems = [];
+      var fromCart = !Utils.getQueryParam('product_id');
+      var addressModal = new bootstrap.Modal(document.getElementById('addressModal'));
+
+      // 加载地址
+      function loadAddresses() {
+        API.getAddresses().then(function(addrs) {
+          var list = document.getElementById('address-list');
+          addrs = addrs || [];
+          if (addrs.length === 0) {
+            list.innerHTML = '<div class="text-muted py-2">暂无收货地址，请添加</div>';
+            return;
+          }
+          list.innerHTML = addrs.map(function(a) {
+            var active = a.is_default || !selectedAddressId ? 'border-primary' : '';
+            if (a.is_default && !selectedAddressId) selectedAddressId = a.address_id;
+            return '<div class="address-item border rounded p-2 mb-2 cursor-pointer ' + active + '" data-id="' + a.address_id + '">' +
+              '<div class="d-flex justify-content-between">' +
+                '<div>' +
+                  '<strong>' + a.receiver_name + '</strong> ' +
+                  '<span class="text-muted ms-2">' + a.phone + '</span>' +
+                  (a.is_default ? '<span class="badge bg-primary ms-2">默认</span>' : '') +
+                '</div>' +
+              '</div>' +
+              '<small class="text-muted">' + (a.province||'') + (a.city||'') + (a.district||'') + ' ' + (a.detail_address||'') + '</small>' +
+            '</div>';
+          }).join('');
+
+          // 地址选择
+          list.querySelectorAll('.address-item').forEach(function(el) {
+            el.addEventListener('click', function() {
+              list.querySelectorAll('.address-item').forEach(function(e) { e.classList.remove('border-primary'); });
+              this.classList.add('border-primary');
+              selectedAddressId = this.dataset.id;
+            });
+          });
+        }).catch(function() {});
+      }
+
+      // 新增地址
+      document.getElementById('btn-new-address').addEventListener('click', function() {
+        addressModal.show();
+      });
+
+      document.getElementById('btn-save-address').addEventListener('click', function() {
+        var data = {
+          receiver_name: document.getElementById('addr-receiver').value.trim(),
+          phone: document.getElementById('addr-phone').value.trim(),
+          province: document.getElementById('addr-province').value.trim(),
+          city: document.getElementById('addr-city').value.trim(),
+          district: document.getElementById('addr-district').value.trim(),
+          detail_address: document.getElementById('addr-detail').value.trim(),
+        };
+        if (!data.receiver_name || !data.phone || !data.province || !data.city || !data.district || !data.detail_address) {
+          Utils.toast('请完整填写地址信息', 'warning');
+          return;
+        }
+        API.addAddress(data).then(function() {
+          addressModal.hide();
+          Utils.toast('地址添加成功', 'success');
+          loadAddresses();
+          document.getElementById('form-address').reset();
+        }).catch(function(err) { Utils.toast(err.message || '添加失败', 'error'); });
+      });
+
+      // 加载商品
+      function loadItems() {
+        var container = document.getElementById('order-items');
+        if (fromCart) {
+          API.getCart().then(function(items) {
+            items = items || [];
+            orderItems = items.map(function(item) {
+              return {
+                product_id: item.product_id,
+                product_name: item.product_name || '未知',
+                price: item.price || 0,
+                quantity: item.quantity,
+                image_url: item.image_url,
+              };
+            });
+            renderItems();
+          }).catch(function(err) {
+            container.innerHTML = '<div class="text-danger">加载失败: ' + (err.message || '') + '</div>';
+          });
+        } else {
+          var pid = Utils.getQueryParam('product_id');
+          var qty = parseInt(Utils.getQueryParam('quantity')) || 1;
+          API.getProduct(pid).then(function(p) {
+            if (!p) throw new Error('商品不存在');
+            orderItems = [{
+              product_id: p.product_id,
+              product_name: p.product_name,
+              price: p.price,
+              quantity: qty,
+              image_url: p.image_url,
+            }];
+            renderItems();
+          }).catch(function(err) {
+            container.innerHTML = '<div class="text-danger">加载失败: ' + (err.message || '') + '</div>';
+          });
+        }
+      }
+
+      function renderItems() {
+        var container = document.getElementById('order-items');
+        if (orderItems.length === 0) {
+          container.innerHTML = '<div class="text-muted py-2">没有商品</div>';
+          updateSummary();
+          return;
+        }
+        container.innerHTML = orderItems.map(function(item) {
+          var imgHtml = item.image_url
+            ? '<img src="' + item.image_url + '" class="order-item-img" alt="' + item.product_name + '">'
+            : '<div class="order-item-img d-flex align-items-center justify-content-center bg-light"><i class="fas fa-image text-muted"></i></div>';
+          return '<div class="order-item-row">' +
+            imgHtml +
+            '<div class="ms-3 flex-fill">' +
+              '<div class="fw-medium">' + item.product_name + '</div>' +
+              '<div class="text-muted small">¥' + parseFloat(item.price).toFixed(2) + ' × ' + item.quantity + '</div>' +
+            '</div>' +
+            '<div class="fw-bold text-primary-custom">¥' + (item.price * item.quantity).toFixed(2) + '</div>' +
+          '</div>';
+        }).join('');
+        updateSummary();
+      }
+
+      function updateSummary() {
+        var count = orderItems.reduce(function(sum, item) { return sum + item.quantity; }, 0);
+        var total = orderItems.reduce(function(sum, item) { return sum + item.price * item.quantity; }, 0);
+        document.getElementById('checkout-count').textContent = count + ' 件';
+        document.getElementById('checkout-subtotal').textContent = '¥' + total.toFixed(2);
+        document.getElementById('checkout-total').textContent = '¥' + total.toFixed(2);
+      }
+
+      // 提交订单
+      document.getElementById('btn-submit-order').addEventListener('click', function() {
+        var btn = this;
+        if (!selectedAddressId) { Utils.toast('请选择收货地址', 'warning'); return; }
+        if (orderItems.length === 0) { Utils.toast('没有商品可下单', 'warning'); return; }
+
+        var orderData = {
+          addressId: selectedAddressId,
+          items: orderItems.map(function(item) { return { productId: item.product_id, quantity: item.quantity }; }),
+        };
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>提交中...';
+        API.createOrder(orderData).then(function(res) {
+          Utils.toast('订单创建成功！', 'success');
+          var orderId = (res && res.orderId) || null;
+          setTimeout(function() {
+            window.location.href = 'order.html' + (orderId ? '?order_id=' + orderId : '');
+          }, 500);
+        }).catch(function(err) {
+          Utils.toast(err.message || '下单失败，请重试', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-credit-card me-2"></i>提交订单';
+        });
+      });
+
+      loadAddresses();
+      loadItems();
+    });
+  </script>
+</body>
+</html>
