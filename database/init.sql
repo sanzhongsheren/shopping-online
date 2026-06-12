@@ -8,6 +8,7 @@
 DROP DATABASE IF EXISTS online_shopping;
 CREATE DATABASE online_shopping DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE online_shopping;
+SET NAMES utf8mb4;
 
 -- ----------------------------
 -- 1. 用户表 (users)
@@ -21,7 +22,7 @@ CREATE TABLE users (
     phone VARCHAR(20) COMMENT '手机号',
     role ENUM('buyer', 'seller', 'admin') NOT NULL DEFAULT 'buyer' COMMENT '角色: buyer买家/seller卖家/admin管理员',
     status ENUM('pending', 'approved', 'rejected', 'active', 'disabled') NOT NULL DEFAULT 'pending' COMMENT '账号状态',
-    real_name VARCHAR(50) COMMENT '真实姓名',
+    real_name VARCHAR(200) COMMENT '真实姓名',
     id_card VARCHAR(18) COMMENT '身份证号(卖家审核用)',
     avatar_url VARCHAR(255) COMMENT '头像URL',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -41,9 +42,9 @@ CREATE TABLE addresses (
     user_id INT NOT NULL COMMENT '用户ID',
     receiver_name VARCHAR(50) NOT NULL COMMENT '收货人姓名',
     phone VARCHAR(20) NOT NULL COMMENT '联系电话',
-    province VARCHAR(50) NOT NULL COMMENT '省份',
-    city VARCHAR(50) NOT NULL COMMENT '城市',
-    district VARCHAR(50) NOT NULL COMMENT '区县',
+    province VARCHAR(200) NOT NULL COMMENT '省份',
+    city VARCHAR(200) NOT NULL COMMENT '城市',
+    district VARCHAR(200) NOT NULL COMMENT '区县',
     detail_address VARCHAR(255) NOT NULL COMMENT '详细地址',
     postal_code VARCHAR(10) COMMENT '邮政编码',
     is_default BOOLEAN DEFAULT FALSE COMMENT '是否为默认地址',
@@ -59,7 +60,7 @@ CREATE TABLE addresses (
 DROP TABLE IF EXISTS categories;
 CREATE TABLE categories (
     category_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '分类ID',
-    category_name VARCHAR(50) NOT NULL COMMENT '分类名称',
+    category_name VARCHAR(200) NOT NULL COMMENT '分类名称',
     parent_id INT NULL COMMENT '父分类ID(顶级为NULL)',
     sort_order INT DEFAULT 0 COMMENT '排序顺序',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -75,7 +76,7 @@ CREATE TABLE products (
     product_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '商品ID',
     seller_id INT NOT NULL COMMENT '卖家ID',
     category_id INT COMMENT '分类ID',
-    product_name VARCHAR(100) NOT NULL COMMENT '商品名称',
+    product_name VARCHAR(200) NOT NULL COMMENT '商品名称',
     description TEXT COMMENT '商品描述',
     price DECIMAL(10, 2) NOT NULL COMMENT '单价',
     stock INT NOT NULL DEFAULT 0 COMMENT '库存数量',
@@ -148,7 +149,7 @@ CREATE TABLE order_items (
     item_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '明细ID',
     order_id INT NOT NULL COMMENT '订单ID',
     product_id INT NOT NULL COMMENT '商品ID',
-    product_name VARCHAR(100) NOT NULL COMMENT '商品名称(快照)',
+    product_name VARCHAR(200) NOT NULL COMMENT '商品名称(快照)',
     product_image VARCHAR(255) COMMENT '商品图片(快照)',
     price DECIMAL(10, 2) NOT NULL COMMENT '单价(快照)',
     quantity INT NOT NULL COMMENT '购买数量',
