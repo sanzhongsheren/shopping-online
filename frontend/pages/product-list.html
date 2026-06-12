@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品列表 - 商品网上交易系统</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+  <header class="top-header" id="app-header"></header>
+  <div id="toast-container"></div>
+
+  <main class="page-container">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb" id="breadcrumb">
+          <li class="breadcrumb-item"><a href="../index.html">首页</a></li>
+          <li class="breadcrumb-item active">商品列表</li>
+        </ol>
+      </nav>
+
+      <div class="row">
+        <!-- 筛选侧栏 -->
+        <div class="col-md-3">
+          <div class="bg-white rounded border p-3 mb-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>分类筛选</h6>
+            <div class="list-group list-group-flush" id="category-filter">
+              <a href="#" class="list-group-item list-group-item-action active" data-id="">全部分类</a>
+            </div>
+          </div>
+
+          <div class="bg-white rounded border p-3 mb-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-sort me-2"></i>排序方式</h6>
+            <div class="d-flex flex-column gap-2" id="sort-options">
+              <button class="btn btn-outline-secondary btn-sm active" data-sort="default">默认排序</button>
+              <button class="btn btn-outline-secondary btn-sm" data-sort="sales">按销量</button>
+              <button class="btn btn-outline-secondary btn-sm" data-sort="price_asc">价格从低到高</button>
+              <button class="btn btn-outline-secondary btn-sm" data-sort="price_desc">价格从高到低</button>
+              <button class="btn btn-outline-secondary btn-sm" data-sort="newest">最新发布</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="col-md-9">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted" id="result-count">共 <strong>0</strong> 件商品</span>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary active" id="view-grid"><i class="fas fa-th"></i></button>
+              <button class="btn btn-outline-secondary" id="view-list"><i class="fas fa-list"></i></button>
+            </div>
+          </div>
+
+          <div class="row g-3" id="product-list-container">
+            <div class="col-12 text-center py-5 text-muted">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">加载中...</span>
+              </div>
+              <p class="mt-2">正在加载商品...</p>
+            </div>
+          </div>
+
+          <!-- 分页 -->
+          <nav class="mt-4" id="pagination-nav" style="display:none;">
+            <ul class="pagination justify-content-center" id="pagination"></ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer" id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var currentParams = {
+        keyword: Utils.getQueryParam('keyword') || '',
+        category_id: Utils.getQueryParam('category_id') || '',
+        sort: 'default',
+        page: 1,
+        page_size: 12,
+      };
+
+      var totalPages = 1;
+
+      // 搜索框同步
+      var searchInput = document.getElementById('global-search-input');
+      if (searchInput && currentParams.keyword) {
+        searchInput.value = currentParams.keyword;
+      }
+
+      // 更新面包屑
+      if (currentParams.keyword) {
+        document.getElementById('breadcrumb').innerHTML =
+          '<li class="breadcrumb-item"><a href="../index.html">首页</a></li>' +
+          '<li class="breadcrumb-item active">搜索: ' + currentParams.keyword + '</li>';
+      }
+
+      // 加载分类
+      API.getCategories().then(function(categories) {
+        if (categories && categories.length) {
+          var filter = document.getElementById('category-filter');
+          categories.forEach(function(cat) {
+            if (!cat.parent_id) {
+              var a = document.createElement('a');
+              a.className = 'list-group-item list-group-item-action';
+              a.href = '?category_id=' + cat.category_id;
+              a.dataset.id = cat.category_id;
+              a.textContent = cat.category_name;
+              if (cat.category_id == currentParams.category_id) {
+                a.classList.add('active');
+              }
+              filter.appendChild(a);
+            }
+          });
+        }
+      });
+
+      // 分类筛选点击
+      document.getElementById('category-filter').addEventListener('click', function(e) {
+        var a = e.target.closest('.list-group-item');
+        if (!a) return;
+        e.preventDefault();
+        document.querySelectorAll('#category-filter .list-group-item').forEach(function(el) { el.classList.remove('active'); });
+        a.classList.add('active');
+        currentParams.category_id = a.dataset.id;
+        currentParams.page = 1;
+        loadProducts();
+      });
+
+      // 排序点击
+      document.getElementById('sort-options').addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn');
+        if (!btn) return;
+        document.querySelectorAll('#sort-options .btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentParams.sort = btn.dataset.sort;
+        currentParams.page = 1;
+        loadProducts();
+      });
+
+      // 加载商品
+      function loadProducts() {
+        var container = document.getElementById('product-list-container');
+        container.innerHTML = '<div class="col-12 text-center py-5 text-muted"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">加载中...</span></div><p class="mt-2">正在加载商品...</p></div>';
+
+        var params = {
+          page: currentParams.page,
+          page_size: currentParams.page_size,
+        };
+        if (currentParams.keyword) params.keyword = currentParams.keyword;
+        if (currentParams.category_id) params.category_id = currentParams.category_id;
+        if (currentParams.sort && currentParams.sort !== 'default') params.sort = currentParams.sort;
+
+        API.getProducts(params).then(function(items) {
+          items = items || [];
+          var pagination = items._pagination || {};
+          document.getElementById('result-count').innerHTML = '共 <strong>' + (pagination.total || items.length) + '</strong> 件商品';
+
+          if (items.length === 0) {
+            container.innerHTML = '<div class="col-12"><div class="empty-state"><i class="fas fa-box-open"></i><h5>暂无商品</h5><p class="text-muted">试试其他关键词或分类</p></div></div>';
+            document.getElementById('pagination-nav').style.display = 'none';
+            return;
+          }
+
+          container.innerHTML = items.map(function(p) {
+            var imgHtml = p.image_url
+              ? '<img src="' + p.image_url + '" class="product-img" alt="' + p.product_name + '">'
+              : '<div class="product-img-placeholder"><i class="fas fa-image"></i></div>';
+            var badgeHtml = p.status !== 'onsale' ? '<div class="position-absolute top-0 start-0 p-2">' + Utils.statusBadge(p.status) + '</div>' : '';
+            return '<div class="col-6 col-md-4">' +
+              '<div class="product-card position-relative">' +
+                '<a href="product-detail.html?id=' + p.product_id + '">' + imgHtml + '</a>' +
+                badgeHtml +
+                '<div class="card-body">' +
+                  '<a href="product-detail.html?id=' + p.product_id + '" class="product-name">' + p.product_name + '</a>' +
+                  '<div class="d-flex justify-content-between align-items-center">' +
+                    '<span class="product-price"><span class="symbol">¥</span>' + parseFloat(p.price).toFixed(2) + '</span>' +
+                    '<span class="product-sales">已售 ' + (p.sales_count || 0) + '</span>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+
+          // 分页
+          totalPages = Math.ceil((pagination.total || items.length) / currentParams.page_size);
+          renderPagination();
+
+        }).catch(function(err) {
+          container.innerHTML = '<div class="col-12"><div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5><p class="text-muted">' + (err.message || '网络错误') + '</p></div></div>';
+        });
+      }
+
+      function renderPagination() {
+        var nav = document.getElementById('pagination-nav');
+        var ul = document.getElementById('pagination');
+        ul.innerHTML = '';
+        if (totalPages <= 1) { nav.style.display = 'none'; return; }
+        nav.style.display = '';
+
+        var addPage = function(label, page, active, disabled) {
+          var li = document.createElement('li');
+          li.className = 'page-item' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
+          var a = document.createElement('a');
+          a.className = 'page-link';
+          a.href = '#';
+          a.textContent = label;
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!disabled && !active) {
+              currentParams.page = page;
+              loadProducts();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          });
+          li.appendChild(a);
+          ul.appendChild(li);
+        };
+
+        addPage('«', currentParams.page - 1, false, currentParams.page <= 1);
+        for (var i = 1; i <= totalPages; i++) {
+          addPage(i, i, i === currentParams.page, false);
+        }
+        addPage('»', currentParams.page + 1, false, currentParams.page >= totalPages);
+      }
+
+      loadProducts();
+    });
+  </script>
+</body>
+</html>

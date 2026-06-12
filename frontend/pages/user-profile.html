@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 商品网上交易系统</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+  <header class="top-header" id="app-header"></header>
+  <div id="toast-container"></div>
+
+  <main class="page-container">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="../index.html">首页</a></li>
+          <li class="breadcrumb-item active">个人中心</li>
+        </ol>
+      </nav>
+
+      <div class="row">
+        <!-- 侧栏 -->
+        <div class="col-md-3">
+          <div class="profile-sidebar">
+            <div class="user-info">
+              <div class="user-avatar"><i class="fas fa-user"></i></div>
+              <h6 id="sidebar-username">用户</h6>
+              <span id="sidebar-role"></span>
+            </div>
+            <div class="nav flex-column" id="sidebar-nav">
+              <a class="nav-link active" href="#" data-tab="profile"><i class="fas fa-user-cog"></i>个人信息</a>
+              <a class="nav-link" href="#" data-tab="addresses"><i class="fas fa-map-marker-alt"></i>收货地址</a>
+              <a class="nav-link" href="messages.html"><i class="fas fa-comments"></i>留言中心</a>
+              <a class="nav-link" href="order.html"><i class="fas fa-receipt"></i>我的订单</a>
+              <a class="nav-link" href="#" data-tab="favorites"><i class="fas fa-heart"></i>我的收藏</a>
+              <a class="nav-link" href="#" data-tab="products" id="nav-products" style="display:none;"><i class="fas fa-box"></i>商品管理</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="col-md-9">
+          <div class="bg-white rounded border p-4" id="profile-content">
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">加载中...</span></div>
+              <p class="mt-2">加载中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer" id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!App.requireLogin()) return;
+
+      var currentTab = Utils.getQueryParam('tab') || 'profile';
+
+      // 侧栏信息
+      if (App.user) {
+        document.getElementById('sidebar-username').textContent = App.user.username;
+        document.getElementById('sidebar-role').innerHTML = Utils.roleBadge(App.user.role);
+        // 卖家/管理员显示商品管理
+        if (App.isSeller || App.isAdmin) {
+          document.getElementById('nav-products').style.display = 'block';
+        }
+      }
+
+      // 侧栏导航
+      document.getElementById('sidebar-nav').addEventListener('click', function(e) {
+        var a = e.target.closest('.nav-link');
+        if (!a || !a.dataset.tab) return;
+        e.preventDefault();
+        document.querySelectorAll('#sidebar-nav .nav-link').forEach(function(el) { el.classList.remove('active'); });
+        a.classList.add('active');
+        currentTab = a.dataset.tab;
+        loadTab(currentTab);
+      });
+
+      function loadTab(tab) {
+        var container = document.getElementById('profile-content');
+        if (tab === 'profile') loadProfile(container);
+        else if (tab === 'addresses') loadAddresses(container);
+        else if (tab === 'favorites') loadFavorites(container);
+        else if (tab === 'products') loadMyProducts(container);
+      }
+
+      // ===== 个人信息 =====
+      function loadProfile(container) {
+        container.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-secondary" role="status"></div><p class="mt-2">加载中...</p></div>';
+
+        API.getProfile().then(function(u) {
+          if (!u) { container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5></div>'; return; }
+          container.innerHTML =
+            '<h5 class="fw-bold mb-3"><i class="fas fa-user-cog me-2 text-primary-custom"></i>个人信息</h5>' +
+            '<form id="form-profile" onsubmit="return false;">' +
+              '<div class="row mb-3">' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">用户名</label>' +
+                  '<input type="text" class="form-control" value="' + (u.username || '') + '" disabled>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">角色</label>' +
+                  '<div>' + Utils.roleBadge(u.role) + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="row mb-3">' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">邮箱</label>' +
+                  '<input type="email" class="form-control" id="pf-email" value="' + (u.email || '') + '">' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">手机号</label>' +
+                  '<input type="tel" class="form-control" id="pf-phone" value="' + (u.phone || '') + '">' +
+                '</div>' +
+              '</div>' +
+              '<div class="row mb-3">' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">真实姓名</label>' +
+                  '<input type="text" class="form-control" id="pf-realname" value="' + (u.real_name || '') + '">' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                  '<label class="form-label small">账号状态</label>' +
+                  '<div>' + Utils.statusBadge(u.status) + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="mb-3">' +
+                '<label class="form-label small">注册时间</label>' +
+                '<div class="text-muted">' + Utils.formatDate(u.created_at) + '</div>' +
+              '</div>' +
+              '<button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>保存修改</button>' +
+            '</form>';
+
+          document.getElementById('form-profile').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var data = {
+              email: document.getElementById('pf-email').value.trim(),
+              phone: document.getElementById('pf-phone').value.trim(),
+              real_name: document.getElementById('pf-realname').value.trim(),
+            };
+            API.updateProfile(data).then(function() {
+              Utils.toast('个人信息已更新', 'success');
+            }).catch(function(err) { Utils.toast(err.message || '更新失败', 'error'); });
+          });
+        }).catch(function(err) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5></div>';
+        });
+      }
+
+      // ===== 收货地址 =====
+      function loadAddresses(container) {
+        container.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-secondary" role="status"></div><p class="mt-2">加载中...</p></div>';
+
+        API.getAddresses().then(function(addrs) {
+          addrs = addrs || [];
+          var html = '<h5 class="fw-bold mb-3"><i class="fas fa-map-marker-alt me-2 text-primary-custom"></i>收货地址</h5>';
+          if (addrs.length === 0) {
+            html += '<div class="text-muted py-3">暂无收货地址</div>';
+          } else {
+            html += addrs.map(function(a) {
+              return '<div class="border rounded p-3 mb-2">' +
+                '<div class="d-flex justify-content-between">' +
+                  '<div>' +
+                    '<strong>' + a.receiver_name + '</strong> ' +
+                    '<span class="text-muted ms-2">' + a.phone + '</span>' +
+                    (a.is_default ? '<span class="badge bg-primary ms-2">默认</span>' : '') +
+                  '</div>' +
+                  '<div>' +
+                    '<button class="btn btn-sm btn-outline-danger delete-addr" data-id="' + a.address_id + '"><i class="fas fa-trash-alt"></i></button>' +
+                  '</div>' +
+                '</div>' +
+                '<small class="text-muted">' + (a.province||'') + (a.city||'') + (a.district||'') + ' ' + (a.detail_address||'') + '</small>' +
+              '</div>';
+            }).join('');
+          }
+          html += '<button class="btn btn-sm btn-outline-primary mt-2" id="btn-add-addr-profile"><i class="fas fa-plus me-1"></i>新增地址</button>';
+          container.innerHTML = html;
+
+          container.querySelectorAll('.delete-addr').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              if (!confirm('确定删除该地址？')) return;
+              API.deleteAddress(this.dataset.id).then(function() {
+                Utils.toast('地址已删除', 'info');
+                loadAddresses(container);
+              }).catch(function(err) { Utils.toast(err.message || '删除失败', 'error'); });
+            });
+          });
+
+          document.getElementById('btn-add-addr-profile').addEventListener('click', function() {
+            var receiver = prompt('收货人姓名:');
+            if (!receiver) return;
+            var phone = prompt('联系电话:');
+            if (!phone) return;
+            var province = prompt('省份:');
+            if (!province) return;
+            var city = prompt('城市:');
+            if (!city) return;
+            var district = prompt('区县:');
+            if (!district) return;
+            var detail = prompt('详细地址:');
+            if (!detail) return;
+            API.addAddress({ receiverName: receiver, phone: phone, province: province, city: city, district: district, detailAddress: detail }).then(function() {
+              Utils.toast('地址添加成功', 'success');
+              loadAddresses(container);
+            }).catch(function(err) { Utils.toast(err.message || '添加失败', 'error'); });
+          });
+        }).catch(function(err) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5></div>';
+        });
+      }
+
+      // ===== 我的收藏 =====
+      function loadFavorites(container) {
+        container.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-secondary" role="status"></div><p class="mt-2">加载中...</p></div>';
+
+        API.getFavorites().then(function(favs) {
+          favs = favs || [];
+          if (favs.length === 0) {
+            container.innerHTML = '<h5 class="fw-bold mb-3"><i class="fas fa-heart me-2 text-primary-custom"></i>我的收藏</h5>' +
+              '<div class="empty-state"><i class="far fa-heart"></i><h5>暂无收藏</h5><p class="text-muted">去逛逛喜欢的商品吧</p><a href="product-list.html" class="btn btn-primary mt-2">去购物</a></div>';
+            return;
+          }
+
+          var html = '<h5 class="fw-bold mb-3"><i class="fas fa-heart me-2 text-primary-custom"></i>我的收藏 <span class="badge bg-secondary">' + favs.length + '</span></h5>';
+          html += '<div class="row g-3">' + favs.map(function(f) {
+            var imgHtml = f.image_url
+              ? '<img src="' + f.image_url + '" class="product-img" alt="' + f.product_name + '">'
+              : '<div class="product-img-placeholder"><i class="fas fa-image"></i></div>';
+            return '<div class="col-6 col-md-4">' +
+              '<div class="product-card">' +
+                '<a href="product-detail.html?id=' + f.product_id + '">' + imgHtml + '</a>' +
+                '<div class="card-body">' +
+                  '<a href="product-detail.html?id=' + f.product_id + '" class="product-name">' + (f.product_name || '商品') + '</a>' +
+                  '<div class="d-flex justify-content-between align-items-center">' +
+                    '<span class="product-price"><span class="symbol">¥</span>' + parseFloat(f.price || 0).toFixed(2) + '</span>' +
+                    '<button class="btn btn-sm btn-outline-danger remove-fav" data-id="' + f.product_id + '"><i class="fas fa-trash-alt"></i></button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('') + '</div>';
+          container.innerHTML = html;
+
+          container.querySelectorAll('.remove-fav').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              API.removeFavorite(this.dataset.id).then(function() {
+                Utils.toast('已取消收藏', 'info');
+                loadFavorites(container);
+              }).catch(function(err) { Utils.toast(err.message || '操作失败', 'error'); });
+            });
+          });
+        }).catch(function(err) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5></div>';
+        });
+      }
+
+      // ===== 商品管理（卖家/管理员）=====
+      function loadMyProducts(container) {
+        container.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-secondary" role="status"></div><p class="mt-2">加载中...</p></div>';
+
+        var params = {};
+        if (App.isSeller) params.seller_id = App.user.user_id;
+
+        API.getProducts(params).then(function(products) {
+          products = products || [];
+          var html = '<h5 class="fw-bold mb-3"><i class="fas fa-box me-2 text-primary-custom"></i>我的商品 <span class="badge bg-secondary">' + products.length + '</span></h5>';
+
+          html += '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>商品名称</th><th>价格</th><th>库存</th><th>状态</th><th>销量</th><th>操作</th></tr></thead><tbody>';
+          if (products.length === 0) {
+            html += '<tr><td colspan="6" class="text-center text-muted">暂无商品</td></tr>';
+          } else {
+            html += products.map(function(p) {
+              return '<tr>' +
+                '<td><a href="product-detail.html?id=' + p.product_id + '" class="text-decoration-none">' + p.product_name + '</a></td>' +
+                '<td class="text-primary-custom fw-bold">¥' + parseFloat(p.price).toFixed(2) + '</td>' +
+                '<td>' + (p.stock || 0) + '</td>' +
+                '<td>' + Utils.statusBadge(p.status) + '</td>' +
+                '<td>' + (p.sales_count || 0) + '</td>' +
+                '<td>' +
+                  '<a href="product-detail.html?id=' + p.product_id + '" class="btn btn-sm btn-outline-info me-1"><i class="fas fa-eye"></i></a>' +
+                  (p.status === 'onsale' ? '<button class="btn btn-sm btn-outline-warning toggle-status" data-id="' + p.product_id + '" data-status="offsale">下架</button>' : '') +
+                  (p.status === 'offsale' ? '<button class="btn btn-sm btn-outline-success toggle-status" data-id="' + p.product_id + '" data-status="onsale">上架</button>' : '') +
+                '</td>' +
+              '</tr>';
+            }).join('');
+          }
+          html += '</tbody></table></div>';
+
+          // 新增商品表单（卖家）
+          if (App.isSeller) {
+            html += '<hr><h6 class="fw-bold mt-3"><i class="fas fa-plus-circle me-2 text-success"></i>发布新商品</h6>' +
+              '<form id="form-new-product" onsubmit="return false;" class="row g-2 mt-2">' +
+                '<div class="col-md-12"><select class="form-select" id="np-category"><option value="">请选择分类</option></select></div>' +
+                '<div class="col-md-6"><input type="text" class="form-control" id="np-name" placeholder="商品名称" required></div>' +
+                '<div class="col-md-3"><input type="number" class="form-control" id="np-price" placeholder="价格" step="0.01" required></div>' +
+                '<div class="col-md-3"><input type="number" class="form-control" id="np-stock" placeholder="库存数量" required></div>' +
+                '<div class="col-md-12"><textarea class="form-control" id="np-desc" rows="2" placeholder="商品描述"></textarea></div>' +
+                '<div class="col-12"><button type="submit" class="btn btn-success"><i class="fas fa-plus me-2"></i>提交审核</button></div>' +
+              '</form>';
+          }
+
+          container.innerHTML = html;
+
+          // 加载分类下拉框（卖家发布商品用）
+          var catSelect = document.getElementById('np-category');
+          if (catSelect) {
+            API.getCategories().then(function(cats) {
+              if (cats && cats.length) {
+                var groups = {};
+                cats.forEach(function(c) {
+                  if (c.parent_id) {
+                    var parent = cats.find(function(p) { return p.category_id === c.parent_id; });
+                    var groupName = parent ? parent.category_name : '其他';
+                    if (!groups[groupName]) groups[groupName] = [];
+                    groups[groupName].push(c);
+                  }
+                });
+                Object.keys(groups).forEach(function(g) {
+                  var optgroup = document.createElement('optgroup');
+                  optgroup.label = g;
+                  groups[g].forEach(function(c) {
+                    var opt = document.createElement('option');
+                    opt.value = c.category_id;
+                    opt.textContent = c.category_name;
+                    optgroup.appendChild(opt);
+                  });
+                  catSelect.appendChild(optgroup);
+                });
+              }
+            }).catch(function() {});
+          }
+
+          // 下架商品
+          container.querySelectorAll('.toggle-status').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var id = this.dataset.id;
+              var status = this.dataset.status;
+              if (status === 'onsale') {
+                Utils.toast('请通过审核流程上架商品', 'info');
+                return;
+              }
+              if (!confirm('确认下架该商品？')) return;
+              API.deleteProduct(id).then(function() {
+                Utils.toast('已下架', 'success');
+                loadMyProducts(container);
+              }).catch(function(err) { Utils.toast(err.message || '操作失败', 'error'); });
+            });
+          });
+
+          // 新增商品
+          var form = document.getElementById('form-new-product');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              e.preventDefault();
+              var categorySelect = document.getElementById('np-category');
+              var data = {
+                categoryId: categorySelect ? parseInt(categorySelect.value) : 0,
+                productName: document.getElementById('np-name').value.trim(),
+                price: parseFloat(document.getElementById('np-price').value),
+                stock: parseInt(document.getElementById('np-stock').value) || 0,
+                description: document.getElementById('np-desc').value.trim() || '',
+              };
+              if (!data.categoryId) { Utils.toast('请选择商品分类', 'warning'); return; }
+              if (!data.productName || !data.price) { Utils.toast('请填写完整信息', 'warning'); return; }
+              API.addProduct(data).then(function() {
+                Utils.toast('商品已提交审核', 'success');
+                loadMyProducts(container);
+              }).catch(function(err) { Utils.toast(err.message || '发布失败', 'error'); });
+            });
+          }
+        }).catch(function(err) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><h5>加载失败</h5></div>';
+        });
+      }
+
+      // 加载初始tab
+      // 高亮侧栏
+      document.querySelectorAll('#sidebar-nav .nav-link[data-tab]').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.tab === currentTab);
+      });
+      loadTab(currentTab);
+    });
+  </script>
+</body>
+</html>
