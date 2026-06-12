@@ -21,7 +21,7 @@ CREATE TABLE users (
     phone VARCHAR(20) COMMENT '手机号',
     role ENUM('buyer', 'seller', 'admin') NOT NULL DEFAULT 'buyer' COMMENT '角色: buyer买家/seller卖家/admin管理员',
     status ENUM('pending', 'approved', 'rejected', 'active', 'disabled') NOT NULL DEFAULT 'pending' COMMENT '账号状态',
-    real_name VARCHAR(50) COMMENT '真实姓名',
+    real_name VARCHAR(100) COMMENT '真实姓名',
     id_card VARCHAR(18) COMMENT '身份证号(卖家审核用)',
     avatar_url VARCHAR(255) COMMENT '头像URL',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
